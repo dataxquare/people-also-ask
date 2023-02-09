@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-import sys
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any, Optional, Generator
 
@@ -145,8 +144,3 @@ def get_simple_answer(question: str, depth: bool = False) -> str:
             return ""
         return get_simple_answer(related_questions[0])
     return ""
-
-
-if __name__ == "__main__":
-    from pprint import pprint as print
-    print(get_answer(sys.argv[1]))
