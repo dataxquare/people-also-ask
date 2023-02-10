@@ -75,7 +75,7 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
     :param str gl: geo to search
     :param int max_nb_questions: max number of questions
     """
-    logger.info("get_related_questions init")
+    logger.info("get_related_questions for: " + ','.join([text, hl, gl]) + " init")
     if max_nb_questions is None:
         return _get_related_questions(text, hl, gl)
     nb_question_regenerated = 0
@@ -85,7 +85,7 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
             break
         questions.add(question)
         nb_question_regenerated += 1
-    logger.info("get_related_questions end")
+    logger.info("get_related_questions for: " + ','.join([text, hl, gl]) + " end")
     return list(questions)
 
 
