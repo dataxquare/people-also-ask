@@ -10,6 +10,8 @@ from typing import Optional
 from people_also_ask.tools import CallingSemaphore
 from people_also_ask.exceptions import RequestError
 from requests import Session
+from random_user_agent.user_agent import UserAgent
+from random_user_agent.params import SoftwareName, OperatingSystem, HardwareType, SoftwareType, Popularity
 
 NB_TIMES_RETRY = os.environ.get(
     "RELATED_QUESTION_NB_TIMES_RETRY", 3
@@ -23,9 +25,15 @@ NB_REQUESTS_DURATION_LIMIT = os.environ.get(
 semaphore = CallingSemaphore(
     NB_REQUESTS_LIMIT, NB_REQUESTS_DURATION_LIMIT
 )
-HEADERS = {
-    'User-Agent': config.SCRAPPER_USER_AGENT
-}
+
+user_agent_rotator = UserAgent(
+    popularity=[Popularity.POPULAR.value, Popularity.COMMON.value],
+    hardware_types=[HardwareType.COMPUTER.value],
+    software_names=[SoftwareName.CHROME.value, SoftwareName.FIREFOX.value],
+    operating_systems=[OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value],
+    software_types=[SoftwareType.WEB_BROWSER.value],
+    limit=100
+)
 
 
 logger = logging.getLogger('app')
@@ -74,13 +82,14 @@ set_proxies(proxies=config.SCRAPPER_HTTP_SERP_PROXY_AGENTS)
 @retryable(NB_TIMES_RETRY)
 def get(url: str, params) -> requests.Response:
     proxies = PROXY_GENERATORS.get()
+    user_agent = user_agent_rotator.get_random_user_agent()
     with Session() as SESSION:
         try:
             with semaphore:
                 response = SESSION.get(
                     url,
                     params=params,
-                    headers=HEADERS,
+                    headers={'User-Agent': user_agent},
                     proxies=proxies,
                 )
         except Exception:

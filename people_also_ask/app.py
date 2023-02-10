@@ -4,6 +4,7 @@ sys.path.append('./')
 
 import connexion
 import logging
+import json
 import config
 
 from waitress import serve
@@ -15,7 +16,7 @@ logger = logging.getLogger('app')
 
 
 def paa(data):
-    return get_related_questions(data['keyword'], data['hl'], data['gl'], config.MAX_QUESTIONS)
+    return json.dumps(get_related_questions(data['keyword'], data['hl'], data['gl'], config.MAX_QUESTIONS))
 
 
 if __name__ == '__main__':
