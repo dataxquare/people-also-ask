@@ -2,6 +2,7 @@ import os
 import logging
 import requests
 import traceback
+import people_also_ask.config as config
 
 from people_also_ask.tools import retryable
 from itertools import cycle
@@ -26,9 +27,7 @@ semaphore = CallingSemaphore(
     NB_REQUESTS_LIMIT, NB_REQUESTS_DURATION_LIMIT
 )
 HEADERS = {
-    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-    " AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/84.0.4147.135 Safari/537.36"
+    'User-Agent': config.SCRAPPER_USER_AGENT
 }
 
 
@@ -52,10 +51,8 @@ class ProxyGeneator:
         if not self.proxies:
             return {}
         proxy = next(self.iter_proxy)
-        if not proxy.startswith("https"):
-            proxy = f"http://{proxy}"
         return {
-            "https": proxy
+            "http": proxy
         }
 
 
@@ -73,8 +70,7 @@ def set_proxies(proxies: Optional[tuple]) -> ProxyGeneator:
     global PROXY_GENERATORS
     PROXY_GENERATORS = ProxyGeneator(proxies=proxies)
 
-
-set_proxies(proxies=_load_proxies())
+set_proxies(proxies=config.SCRAPPER_HTTP_SERP_PROXY_AGENTS)
 
 
 @retryable(NB_TIMES_RETRY)
