@@ -9,11 +9,8 @@ from itertools import cycle
 from typing import Optional
 from people_also_ask.tools import CallingSemaphore
 from people_also_ask.exceptions import RequestError
+from requests import Session
 
-from requests import Session as _Session
-
-
-SESSION = _Session()
 NB_TIMES_RETRY = os.environ.get(
     "RELATED_QUESTION_NB_TIMES_RETRY", 3
 )
@@ -70,26 +67,28 @@ def set_proxies(proxies: Optional[tuple]) -> ProxyGeneator:
     global PROXY_GENERATORS
     PROXY_GENERATORS = ProxyGeneator(proxies=proxies)
 
+
 set_proxies(proxies=config.SCRAPPER_HTTP_SERP_PROXY_AGENTS)
 
 
 @retryable(NB_TIMES_RETRY)
 def get(url: str, params) -> requests.Response:
     proxies = PROXY_GENERATORS.get()
-    try:
-        with semaphore:
-            response = SESSION.get(
-                url,
-                params=params,
-                headers=HEADERS,
-                proxies=proxies,
+    with Session() as SESSION:
+        try:
+            with semaphore:
+                response = SESSION.get(
+                    url,
+                    params=params,
+                    headers=HEADERS,
+                    proxies=proxies,
+                )
+        except Exception:
+            raise RequestError(
+                url, params, proxies, traceback.format_exc()
             )
-    except Exception:
-        raise RequestError(
-            url, params, proxies, traceback.format_exc()
-        )
-    if response.status_code != 200:
-        raise RequestError(
-            url, params, proxies, response.text
-        )
-    return response
+        if response.status_code != 200:
+            raise RequestError(
+                url, params, proxies, response.text
+            )
+        return response
