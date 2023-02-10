@@ -20,6 +20,7 @@ Paste==3.5.2
 pyrsistent==0.19.3
 python-dotenv==0.21.1
 PyYAML==6.0
+random-user-agent==1.0.1
 requests==2.28.2
 six==1.16.0
 soupsieve==2.3.2.post1
