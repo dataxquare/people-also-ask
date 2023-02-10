@@ -11,67 +11,81 @@ from people_also_ask.exceptions import (
     FeaturedSnippetParserError
 )
 from people_also_ask.request import get
+import logging
+
+logger = logging.getLogger('app')
 
 
 URL = "https://www.google.com/search"
 
 
-def search(keyword: str) -> Optional[BeautifulSoup]:
+def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us") -> Optional[BeautifulSoup]:
     """return html parser of google search result"""
-    params = {"q": keyword, "gl": "us"}
+    params = {"q": keyword, "hl": hl, "gl": gl}
     response = get(URL, params=params)
     return BeautifulSoup(response.text, "html.parser")
 
 
-def _get_related_questions(text: str) -> List[str]:
+def _get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us") -> List[str]:
     """
     return a list of questions related to text.
     These questions are from search result of text
 
     :param str text: text to search
+    :param str hl: language to search
+    :param str gl: geo to search
     """
-    document = search(text)
+    document = search(text, hl, gl)
     if not document:
         return []
     try:
         return extract_related_questions(document)
     except Exception:
-        raise RelatedQuestionParserError(text)
+        raise RelatedQuestionParserError(text, hl, gl)
 
 
-def generate_related_questions(text: str) -> Generator[str, None, None]:
+def generate_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us") -> Generator[str, None, None]:
     """
     generate the questions related to text,
     these quetions are found recursively
 
     :param str text: text to search
+    :param str hl: language to search
+    :param str gl: geo to search
     """
-    questions = set(_get_related_questions(text))
+    logger.info("generate_related_questions init")
+    questions = set(_get_related_questions(text, hl, gl))
     searched_text = set(text)
     while questions:
         text = questions.pop()
         yield text
         searched_text.add(text)
-        questions |= set(_get_related_questions(text))
+        questions |= set(_get_related_questions(text, hl, gl))
         questions -= searched_text
 
 
-def get_related_questions(text: str, max_nb_questions: Optional[int] = None):
+def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us",
+                          max_nb_questions: Optional[int] = None):
     """
     return a number of questions related to text.
     These questions are found recursively.
 
     :param str text: text to search
+    :param str hl: language to search
+    :param str gl: geo to search
+    :param int max_nb_questions: max number of questions
     """
+    logger.info("get_related_questions init")
     if max_nb_questions is None:
-        return _get_related_questions(text)
+        return _get_related_questions(text, hl, gl)
     nb_question_regenerated = 0
     questions = set()
-    for question in generate_related_questions(text):
+    for question in generate_related_questions(text, hl, gl):
         if nb_question_regenerated > max_nb_questions:
             break
         questions.add(question)
         nb_question_regenerated += 1
+    logger.info("get_related_questions end")
     return list(questions)
 
 

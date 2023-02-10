@@ -43,12 +43,14 @@ class RelatedQuestionParserError(RelatedQuestionError):
     from search result page
     """
 
-    def __init__(self, text):
+    def __init__(self, text, hl, gl):
         self.keyword = text
+        self.hl = hl
+        self.gl = gl
 
     def __repr__(self):
         return (
-            f"Cannot parse result page of '{self.text}'."
+            f"Cannot parse result page of '{self.text}','{self.hl}','{self.gl}'."
             f" It mays due to a format change of result page."
             f' Please report it on {GITHUB_LINK}.'
         )

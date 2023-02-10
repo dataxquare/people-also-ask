@@ -15,11 +15,11 @@ FEATURED_SNIPPET_ATTRIBUTES = [
 
 def extract_related_questions(document: BeautifulSoup) -> List[str]:
     div_questions = document.find_all("div", class_="related-question-pair")
-    get_text = lambda a: a.text.split('Search for:')[0]
+    get_text = lambda a: a.text.split(':')[1]
     if not div_questions:
         return []
     questions = list(map(get_text, div_questions))
-    return questions
+    return list(map(str.strip, questions))
 
 
 def is_ol_but_not_a_menu(tag):

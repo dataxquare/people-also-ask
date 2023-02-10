@@ -22,7 +22,6 @@ NB_REQUESTS_LIMIT = os.environ.get(
 NB_REQUESTS_DURATION_LIMIT = os.environ.get(
     "RELATED_QUESTION_NB_REQUESTS_DURATION_LIMIT", 60  # seconds
 )
-logging.basicConfig()
 semaphore = CallingSemaphore(
     NB_REQUESTS_LIMIT, NB_REQUESTS_DURATION_LIMIT
 )
@@ -33,7 +32,7 @@ HEADERS = {
 }
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 
 
 class ProxyGeneator:
