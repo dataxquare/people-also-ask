@@ -41,7 +41,7 @@ logger = logging.getLogger('app')
 
 class ProxyGeneator:
 
-    def __init__(self, proxies: Optional[tuple]):
+    def __init__(self, proxies: Optional[str]):
         self.proxies = proxies
 
     @property
@@ -57,7 +57,8 @@ class ProxyGeneator:
             return {}
         proxy = next(self.iter_proxy)
         return {
-            "http": proxy
+            "http": proxy,
+            "https": proxy
         }
 
 
@@ -71,7 +72,7 @@ def _load_proxies() -> Optional[tuple]:
     return proxies
 
 
-def set_proxies(proxies: Optional[tuple]) -> ProxyGeneator:
+def set_proxies(proxies: Optional[str]) -> ProxyGeneator:
     global PROXY_GENERATORS
     PROXY_GENERATORS = ProxyGeneator(proxies=proxies)
 
@@ -91,6 +92,7 @@ def get(url: str, params) -> requests.Response:
                     params=params,
                     headers={'User-Agent': user_agent},
                     proxies=proxies,
+                    verify=False
                 )
         except Exception:
             raise RequestError(

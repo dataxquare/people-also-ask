@@ -76,18 +76,19 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
     :param int max_nb_questions: max number of questions
     """
     logger.info("get_related_questions for: " + ','.join([text, hl, gl]) + " init")
-    if max_nb_questions is None:
-        return _get_related_questions(text, hl, gl)
-    nb_question_regenerated = 0
-    questions = set()
-    for question in generate_related_questions(text, hl, gl):
-        if nb_question_regenerated > max_nb_questions:
-            break
-        questions.add(question)
-        nb_question_regenerated += 1
-    logger.info("get_related_questions for: " + ','.join([text, hl, gl]) + " end")
-    return list(questions)
+    questions = set(_get_related_questions(text, hl, gl))
 
+    if max_nb_questions is None or max_nb_questions <= len(questions):
+        return list(questions)
+    else:
+        searched_text = set(text)
+        while questions:
+            text = questions.pop()
+            searched_text.add(text)
+            questions |= set(_get_related_questions(text, hl, gl))
+            questions -= searched_text
+            if max_nb_questions <= len(questions):
+                return list(questions)
 
 def get_answer(question: str) -> Dict[str, Any]:
     """
