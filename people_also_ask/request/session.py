@@ -3,6 +3,7 @@ import logging
 import requests
 import traceback
 import people_also_ask.config as config
+import urllib3
 
 from people_also_ask.tools import retryable
 from itertools import cycle
@@ -34,6 +35,8 @@ user_agent_rotator = UserAgent(
     software_types=[SoftwareType.WEB_BROWSER.value],
     limit=100
 )
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 logger = logging.getLogger('app')
