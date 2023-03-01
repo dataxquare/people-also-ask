@@ -10,7 +10,7 @@ from people_also_ask.exceptions import (
     RelatedQuestionParserError,
     FeaturedSnippetParserError
 )
-from people_also_ask.request import get
+from request.session import get
 import logging
 
 logger = logging.getLogger('app')
