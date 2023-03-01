@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tool-services-paa-service
+  namespace: dataxquare-tool
+  labels:
+    io.portainer.kubernetes.application.stack: dataxquare-tool-services
+    app.kubernetes.io/name: services-paa
+    app.kubernetes.io/instance: services-paa
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http-services-paa
+  selector:
+    app.kubernetes.io/name: services-paa
+    app.kubernetes.io/instance: services-paa

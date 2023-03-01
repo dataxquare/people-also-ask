@@ -1,0 +1,22 @@
+apiVersion: autoscaling.k8s.io/v1beta2
+kind: VerticalPodAutoscaler
+metadata:
+ name: tool-services-paa-recommender
+ namespace: dataxquare-tool
+ labels:
+    io.portainer.kubernetes.application.stack: dataxquare-tool-services
+    app.kubernetes.io/name: services-paa
+    app.kubernetes.io/instance: services-paa
+spec:
+ targetRef:
+   apiVersion: "apps/v1"
+   kind:       Deployment
+   name:       tool-services-paa
+ updatePolicy:
+   updateMode: "Off"
+ resourcePolicy:
+   containerPolicies:
+   - containerName: services-paa
+     minAllowed:
+       cpu: "50m"
+       memory: "192Mi"

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tool-services-paa
+  namespace: dataxquare-tool
+  labels:
+    io.portainer.kubernetes.application.stack: dataxquare-tool-services
+    app.kubernetes.io/name: services-paa
+    app.kubernetes.io/instance: services-paa
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 1
+  strategy:
+    type: "Recreate"
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: services-paa
+      app.kubernetes.io/instance: services-paa
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: services-paa
+        app.kubernetes.io/instance: services-paa
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nodepool
+                operator: In
+                values:
+                - pool-staging-base
+                - pool-staging-scaler
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: nodepool
+                  operator: In
+                  values:
+                  - pool-staging-base
+      imagePullSecrets:
+        - name: registry-1
+      containers:
+        - name: services-paa
+          image: "7j3k22hp.gra7.container-registry.ovh.net/tool/services/paa:1.0.0"
+          imagePullPolicy: Always
+          ports:
+            - name: http-api
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+          envFrom:
+          - secretRef:
+              name: services-env
