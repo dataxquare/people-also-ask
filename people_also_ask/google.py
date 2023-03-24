@@ -89,6 +89,7 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
             questions -= searched_text
             if max_nb_questions <= len(questions):
                 return list(questions)
+        return list(questions)
 
 def get_answer(question: str) -> Dict[str, Any]:
     """
