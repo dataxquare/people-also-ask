@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
+import os
 import time
 import random
 import traceback
 from contextlib import ContextDecorator
 from typing import Callable, List
+import pandas as pd
 from people_also_ask.exceptions import FeaturedSnippetParserError
-
+from typing import Optional
 
 def raise_featuredsnippetparsererror_if_failed(func):
     def wrapper(self: "SimpleFeaturedSnippetParser", *args, **kwargs):
@@ -35,6 +37,24 @@ def retryable(nb_times_retry):
 
 def itemize(lines: List[str]) -> List[str]:
     return ["\t- " + line for line in lines]
+
+def get_city_canonical_name(geo: str, city: Optional[str] = None) -> str:
+    base_path = os.path.dirname(os.path.realpath(__file__))
+
+    if not city:
+        return ''
+
+    geotarget_df = pd.read_csv(f'{base_path}/files/geotargets.csv')
+    cities_row = geotarget_df[geotarget_df['Name'] == city]
+    city_row = cities_row[cities_row['Country Code'] == geo.upper()]
+
+    if city_row.empty:
+        return ''
+
+    canonical_name = city_row['Canonical Name'].values[0]
+
+    return canonical_name
+
 
 
 def tabulate(header, table):

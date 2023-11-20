@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 from bs4 import BeautifulSoup
-from typing import List, Dict, Any, Optional, Generator
+from typing import List, Dict, Any, Optional, Generator, Optional
 
 from people_also_ask.parser import (
     extract_related_questions,
@@ -10,6 +10,7 @@ from people_also_ask.exceptions import (
     RelatedQuestionParserError,
     FeaturedSnippetParserError
 )
+from people_also_ask.tools import get_city_canonical_name
 from request.session import get
 import logging
 
@@ -19,14 +20,18 @@ logger = logging.getLogger('app')
 URL = "https://www.google.com/search"
 
 
-def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us") -> Optional[BeautifulSoup]:
+def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None) -> Optional[BeautifulSoup]:
     """return html parser of google search result"""
-    params = {"q": keyword, "hl": hl, "gl": gl}
+
+    canonical_name = get_city_canonical_name(gl, city)
+    uule = uule_grabber.uule(canonical_name)
+    params = {"q": keyword, "hl": hl, "gl": gl, "uule": uule}
     response = get(URL, params=params)
+    
     return BeautifulSoup(response.text, "html.parser")
 
 
-def _get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us") -> List[str]:
+def _get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None) -> List[str]:
     """
     return a list of questions related to text.
     These questions are from search result of text
@@ -35,7 +40,7 @@ def _get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str
     :param str hl: language to search
     :param str gl: geo to search
     """
-    document = search(text, hl, gl)
+    document = search(text, hl, gl, zone)
     if not document:
         return []
     try:
@@ -64,7 +69,7 @@ def generate_related_questions(text: str, hl: Optional[str] = "en", gl: Optional
         questions -= searched_text
 
 
-def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us",
+def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None,
                           max_nb_questions: Optional[int] = None):
     """
     return a number of questions related to text.
@@ -76,7 +81,7 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
     :param int max_nb_questions: max number of questions
     """
     logger.info("get_related_questions for: " + ','.join([text, hl, gl]) + " init")
-    questions = set(_get_related_questions(text, hl, gl))
+    questions = set(_get_related_questions(text, hl, gl, zone))
 
     if max_nb_questions is None or max_nb_questions <= len(questions):
         return list(questions)
