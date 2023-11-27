@@ -13,6 +13,7 @@ from people_also_ask.exceptions import (
 from people_also_ask.tools import get_city_canonical_name
 from request.session import get
 import logging
+import uule_grabber
 
 logger = logging.getLogger('app')
 
@@ -23,7 +24,7 @@ URL = "https://www.google.com/search"
 def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None) -> Optional[BeautifulSoup]:
     """return html parser of google search result"""
 
-    canonical_name = get_city_canonical_name(gl, city)
+    canonical_name = get_city_canonical_name(gl, zone)
     uule = uule_grabber.uule(canonical_name)
     params = {"q": keyword, "hl": hl, "gl": gl, "uule": uule}
     response = get(URL, params=params)
