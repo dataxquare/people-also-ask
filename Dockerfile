@@ -5,8 +5,10 @@ WORKDIR $BASE_PATH
 
 COPY . .
 
-RUN pip install -r requirements.txt
+RUN pip3 install poetry
+RUN poetry config virtualenvs.create false
+RUN poetry lock --no-update
+RUN poetry install --no-dev
 
 EXPOSE 8080
-
-CMD ["sh", "-c", "python3 ./people_also_ask/app.py"]
+CMD ["poetry", "run", "start"]

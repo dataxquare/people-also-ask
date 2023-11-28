@@ -1,8 +1,9 @@
 import os
 import json
 from dotenv import load_dotenv
+from config import dotenv_path
 
-load_dotenv()
+load_dotenv(dotenv_path)
 
 PAA_MAX_QUESTIONS = int(os.getenv('PAA_MAX_QUESTIONS', '10'))
 
