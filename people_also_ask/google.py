@@ -11,7 +11,7 @@ from people_also_ask.exceptions import (
     FeaturedSnippetParserError
 )
 from people_also_ask.tools import get_city_canonical_name
-from request.session import get
+import requests
 import logging
 import uule_grabber
 
@@ -24,10 +24,11 @@ URL = "https://www.google.com/search"
 def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None) -> Optional[BeautifulSoup]:
     """return html parser of google search result"""
 
+    session = requests.Session()
     canonical_name = get_city_canonical_name(gl, zone)
     uule = uule_grabber.uule(canonical_name)
     params = {"q": keyword, "hl": hl, "gl": gl, "uule": uule}
-    response = get(URL, params=params)
+    response = session.get(URL, params=params)
     
     return BeautifulSoup(response.text, "html.parser")
 
@@ -95,6 +96,7 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
             questions -= searched_text
             if max_nb_questions <= len(questions):
                 return list(questions)
+                
         return list(questions)
 
 def get_answer(question: str) -> Dict[str, Any]:
