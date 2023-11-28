@@ -31,6 +31,8 @@ paths:
                 type: string
               gl:
                 type: string
+              zone:
+                type: string
       responses:
         200:
           description: Succesfull request

@@ -10,13 +10,14 @@ import config
 from waitress import serve
 from paste.translogger import TransLogger
 from logger.logger import configure_logging
-from google import get_related_questions
+from people_also_ask.google import get_related_questions
+from typing import Optional
 
 logger = logging.getLogger('app')
 
 
 def paa(data):
-    return json.dumps(get_related_questions(data['keyword'], data['hl'], data['gl'], config.PAA_MAX_QUESTIONS))
+    return json.dumps(get_related_questions(data['keyword'], data['hl'], data['gl'], data['zone'], config.PAA_MAX_QUESTIONS))
 
 
 if __name__ == '__main__':
