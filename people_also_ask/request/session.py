@@ -2,7 +2,7 @@ import os
 import logging
 import requests
 import traceback
-import people_also_ask.config as config
+import people_also_ask.constants as config
 import urllib3
 
 from people_also_ask.tools import retryable
