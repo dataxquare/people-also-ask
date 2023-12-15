@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
+import random
+from typing import List, Dict, Any, Optional, Generator
+import logging
+from urllib.parse import urlencode
 from bs4 import BeautifulSoup
-from typing import List, Dict, Any, Optional, Generator, Optional
 
 from people_also_ask.parser import (
     extract_related_questions,
@@ -11,25 +14,31 @@ from people_also_ask.exceptions import (
     FeaturedSnippetParserError
 )
 from people_also_ask.tools import get_city_canonical_name
+from people_also_ask.constants import SCRAPPER_HTTP_SERP_PROXY_AGENTS, SCRAPPER_USER_AGENT
 import requests
-import logging
 import uule_grabber
 
 logger = logging.getLogger('app')
 
 
-URL = "https://www.google.com/search"
-
+URL = "https://www.google.com/search?"
 
 def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None) -> Optional[BeautifulSoup]:
     """return html parser of google search result"""
 
     session = requests.Session()
+    app_http_proxy = random.choice(
+            SCRAPPER_HTTP_SERP_PROXY_AGENTS) if SCRAPPER_HTTP_SERP_PROXY_AGENTS else ""
+
+    session.proxies = {'http': app_http_proxy, 'https': app_http_proxy}
+    session.headers.update({'User-Agent': SCRAPPER_USER_AGENT})
+
     canonical_name = get_city_canonical_name(gl, zone)
     uule = uule_grabber.uule(canonical_name)
     params = {"q": keyword, "hl": hl, "gl": gl, "uule": uule}
-    response = session.get(URL, params=params)
-    
+    url = f"{URL}{urlencode(params)}"
+    response = session.get(url)
+
     return BeautifulSoup(response.text, "html.parser")
 
 
@@ -47,8 +56,8 @@ def _get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str
         return []
     try:
         return extract_related_questions(document)
-    except Exception:
-        raise RelatedQuestionParserError(text, hl, gl)
+    except Exception as exc:
+        raise RelatedQuestionParserError(text, hl, gl) from exc
 
 
 def generate_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us") -> Generator[str, None, None]:
@@ -87,17 +96,17 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
 
     if max_nb_questions is None or max_nb_questions <= len(questions):
         return list(questions)
-    else:
-        searched_text = set(text)
-        while questions:
-            text = questions.pop()
-            searched_text.add(text)
-            questions |= set(_get_related_questions(text, hl, gl))
-            questions -= searched_text
-            if max_nb_questions <= len(questions):
-                return list(questions)
-                
-        return list(questions)
+
+    searched_text = set(text)
+    while questions:
+        text = questions.pop()
+        searched_text.add(text)
+        questions |= set(_get_related_questions(text, hl, gl))
+        questions -= searched_text
+        if max_nb_questions <= len(questions):
+            return list(questions)
+
+    return list(questions)
 
 def get_answer(question: str) -> Dict[str, Any]:
     """
@@ -123,8 +132,8 @@ def get_answer(question: str) -> Dict[str, Any]:
         )
         try:
             res.update(featured_snippet.to_dict())
-        except Exception:
-            raise FeaturedSnippetParserError(question)
+        except Exception as exc:
+            raise FeaturedSnippetParserError(question) from exc
     return res
 
 

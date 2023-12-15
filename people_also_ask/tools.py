@@ -4,18 +4,17 @@ import time
 import random
 import traceback
 from contextlib import ContextDecorator
-from typing import Callable, List
+from typing import Callable, List, Optional
 import pandas as pd
 from people_also_ask.exceptions import FeaturedSnippetParserError
-from typing import Optional
 
 def raise_featuredsnippetparsererror_if_failed(func):
     def wrapper(self: "SimpleFeaturedSnippetParser", *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        except Exception:
+        except Exception as exc:
             traceback.print_exc()
-            raise FeaturedSnippetParserError(self.text)
+            raise FeaturedSnippetParserError(self.text) from exc
     return wrapper
 
 

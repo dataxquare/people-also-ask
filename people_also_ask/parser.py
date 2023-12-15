@@ -1,8 +1,7 @@
 #! /usr/bin/env python3
 from bs4.element import Tag
 from bs4 import BeautifulSoup
-from operator import attrgetter
-from typing import List, Optional
+from typing import List
 from people_also_ask.tools import itemize, tabulate, remove_redundant
 
 
@@ -63,6 +62,7 @@ class FeaturedSnippetParser(object):
     def __init__(self, text: str, tag: Tag):
         self.text = text
         self.tag = tag
+        self._tag_link = []
 
     def __getattr__(self, attr):
         if attr in FEATURED_SNIPPET_ATTRIBUTES:

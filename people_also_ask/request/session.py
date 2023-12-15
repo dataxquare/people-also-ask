@@ -1,13 +1,13 @@
 import os
 import logging
-import requests
+from itertools import cycle
+from typing import Optional
 import traceback
+import requests
 import people_also_ask.config as config
 import urllib3
 
 from people_also_ask.tools import retryable
-from itertools import cycle
-from typing import Optional
 from people_also_ask.tools import CallingSemaphore
 from people_also_ask.exceptions import RequestError
 from requests import Session
@@ -46,6 +46,7 @@ class ProxyGeneator:
 
     def __init__(self, proxies: Optional[str]):
         self.proxies = proxies
+        self._iter_proxy = None
 
     @property
     def iter_proxy(self):
@@ -65,42 +66,30 @@ class ProxyGeneator:
         }
 
 
-def _load_proxies() -> Optional[tuple]:
-    filepath = os.getenv("PAA_PROXY_FILE")
-    if filepath:
-        with open(filepath, "w") as fd:
-            proxies = [e.strip() for e in fd.read().splitlines() if e.strip()]
-    else:
-        proxies = None
-    return proxies
-
-
 def set_proxies(proxies: Optional[str]) -> ProxyGeneator:
     global PROXY_GENERATORS
     PROXY_GENERATORS = ProxyGeneator(proxies=proxies)
 
-
 set_proxies(proxies=config.SCRAPPER_HTTP_SERP_PROXY_AGENTS)
-
 
 @retryable(NB_TIMES_RETRY)
 def get(url: str, params) -> requests.Response:
     proxies = PROXY_GENERATORS.get()
     user_agent = user_agent_rotator.get_random_user_agent()
-    with Session() as SESSION:
+    with Session() as session:
         try:
             with semaphore:
-                response = SESSION.get(
+                response = session.get(
                     url,
                     params=params,
                     headers={'User-Agent': user_agent},
                     proxies=proxies,
                     verify=False
                 )
-        except Exception:
+        except Exception as exc:
             raise RequestError(
                 url, params, proxies, traceback.format_exc()
-            )
+            ) from exc
         if response.status_code != 200:
             raise RequestError(
                 url, params, proxies, response.text

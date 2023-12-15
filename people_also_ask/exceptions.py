@@ -31,7 +31,7 @@ class FeaturedSnippetParserError(RelatedQuestionError):
 
     def __repr__(self):
         return (
-            f"Cannot parse result page of '{self.text}'."
+            f"Cannot parse result page of '{self.keyword}'."
             f" It mays due to a format change of result page."
             f' Please report it on {GITHUB_LINK}.'
         )
@@ -50,7 +50,7 @@ class RelatedQuestionParserError(RelatedQuestionError):
 
     def __repr__(self):
         return (
-            f"Cannot parse result page of '{self.text}','{self.hl}','{self.gl}'."
+            f"Cannot parse result page of '{self.keyword}','{self.hl}','{self.gl}'."
             f" It mays due to a format change of result page."
             f' Please report it on {GITHUB_LINK}.'
         )
@@ -72,8 +72,7 @@ class GoogleSearchRequestFailedError(RelatedQuestionError):
 
 
 class InvalidQuestionInputFileError(RelatedQuestionError):
-    """Exception raised when user enter an invalid question input"""
-    """ for data collector """
+    """Exception raised when user enter an invalid question input for data collector"""
 
     def __init__(self, input_file, message):
         self.input_file = input_file
