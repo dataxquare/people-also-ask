@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from people_also_ask.google import get_related_questions
 from people_also_ask.constants import PAA_MAX_QUESTIONS
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel
 import json
 
