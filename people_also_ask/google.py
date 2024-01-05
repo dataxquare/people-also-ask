@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
+import logging
 from bs4 import BeautifulSoup
-from typing import List, Dict, Any, Optional, Generator, Optional
+from typing import List, Dict, Any, Optional, Generator
+import uule_grabber
 
 from people_also_ask.parser import (
     extract_related_questions,
@@ -11,8 +13,6 @@ from people_also_ask.exceptions import (
     FeaturedSnippetParserError
 )
 from people_also_ask.request.session import get
-import logging
-import uule_grabber
 
 logger = logging.getLogger('app')
 
@@ -22,11 +22,14 @@ URL = "https://www.google.com/search"
 
 def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None) -> Optional[BeautifulSoup]:
     """return html parser of google search result"""
+    params = {"q": keyword, "hl": hl, "gl": gl}
 
-    uule = uule_grabber.uule(zone)
-    params = {"q": keyword, "hl": hl, "gl": gl, "uule": uule}
+    if zone:
+        uule = uule_grabber.uule(zone)
+        params["uule"] = uule
+        
     response = get(URL, params=params)
-    
+
     return BeautifulSoup(response.text, "html.parser")
 
 

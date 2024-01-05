@@ -16,5 +16,5 @@ router = APIRouter()
 @router.post("/paa")
 def paa(data: PaaParams) -> str:
     paas = get_related_questions(data.keyword, data.hl, data.gl, data.zone, PAA_MAX_QUESTIONS)
-    
+
     return json.dumps(paas)
