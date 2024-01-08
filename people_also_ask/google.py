@@ -42,13 +42,18 @@ def _get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str
     :param str hl: language to search
     :param str gl: geo to search
     """
+    logger.info('Getting Google SERPs for %s, %s, %s and %s', text, hl, gl, zone)
     document = search(text, hl, gl, zone)
     if not document:
+        logger.info("We have not been able to extract Google SERPs for %s, %s, %s and %s", text, hl, gl, zone)
         return []
     try:
+        logger.info('Extracting related questions from scraped SERPs for %s, %s, %s and %s', text, hl, gl, zone)
         return extract_related_questions(document)
-    except Exception:
-        raise RelatedQuestionParserError(text, hl, gl)
+    except Exception as e:
+        logger.info('There has been an error %s, raising error', e)
+
+        raise RelatedQuestionParserError(text, hl, gl) from e
 
 
 def generate_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str] = "us") -> Generator[str, None, None]:
@@ -60,7 +65,6 @@ def generate_related_questions(text: str, hl: Optional[str] = "en", gl: Optional
     :param str hl: language to search
     :param str gl: geo to search
     """
-    logger.info("generate_related_questions init")
     questions = set(_get_related_questions(text, hl, gl))
     searched_text = set(text)
     while questions:
@@ -82,7 +86,6 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
     :param str gl: geo to search
     :param int max_nb_questions: max number of questions
     """
-    logger.info("get_related_questions for: " + ','.join([text, hl, gl]) + " init")
     questions = set(_get_related_questions(text, hl, gl, zone))
 
     if max_nb_questions is None or max_nb_questions <= len(questions):
@@ -92,11 +95,11 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
         while questions:
             text = questions.pop()
             searched_text.add(text)
-            questions |= set(_get_related_questions(text, hl, gl))
+            questions |= set(_get_related_questions(text, hl, gl, zone))
             questions -= searched_text
             if max_nb_questions <= len(questions):
                 return list(questions)
-                
+
         return list(questions)
 
 def get_answer(question: str) -> Dict[str, Any]:
