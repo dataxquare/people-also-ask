@@ -2,6 +2,7 @@
 import logging
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any, Optional, Generator
+from urllib.parse import urlencode
 import uule_grabber
 
 from people_also_ask.parser import (
@@ -23,13 +24,15 @@ URL = "https://www.google.com/search"
 def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zone: Optional[str] = None) -> Optional[BeautifulSoup]:
     """return html parser of google search result"""
     params = {"q": keyword, "hl": hl, "gl": gl}
+    google_url = f'{URL}?{urlencode(params)}'
 
     if zone:
         uule = uule_grabber.uule(zone)
         logger.debug('Grabbed this uule for %s -> %s', zone, uule)
-        params["uule"] = uule
-        
-    response = get(URL, params=params)
+        google_url = f'{google_url}&uule={uule}'
+
+    response = get(google_url, params={})
+
 
     return BeautifulSoup(response.text, "html.parser")
 
@@ -129,8 +132,8 @@ def get_answer(question: str) -> Dict[str, Any]:
         )
         try:
             res.update(featured_snippet.to_dict())
-        except Exception:
-            raise FeaturedSnippetParserError(question)
+        except Exception as e:
+            raise FeaturedSnippetParserError(question) from e
     return res
 
 
