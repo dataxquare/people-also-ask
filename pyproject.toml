@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "people-also-ask"
-version = "1.1.5"
+version = "1.1.6"
 description = ""
 authors = ["Manuel Martin Morante <manuzombiesbf1@gmail.com>"]
 readme = "README.md"
