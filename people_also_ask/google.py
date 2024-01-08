@@ -26,6 +26,7 @@ def search(keyword: str, hl: Optional[str] = "en", gl: Optional[str] = "us", zon
 
     if zone:
         uule = uule_grabber.uule(zone)
+        logger.debug('Grabbed this uule for %s -> %s', zone, uule)
         params["uule"] = uule
         
     response = get(URL, params=params)
@@ -49,7 +50,9 @@ def _get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str
         return []
     try:
         logger.info('Extracting related questions from scraped SERPs for %s, %s, %s and %s', text, hl, gl, zone)
-        return extract_related_questions(document)
+        questions = extract_related_questions(document)
+        logger.debug('Related questions for %s, %s, %s and %s -> %s', text, hl, gl, zone, questions)
+        return questions
     except Exception as e:
         logger.info('There has been an error %s, raising error', e)
 
