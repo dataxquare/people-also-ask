@@ -89,7 +89,6 @@ def get_related_questions(text: str, hl: Optional[str] = "en", gl: Optional[str]
     :param int max_nb_questions: max number of questions
     """
     questions = set(_get_related_questions(text, hl, gl, zone))
-    print(questions)
 
     if max_nb_questions is None or max_nb_questions <= len(questions):
         return list(questions)
